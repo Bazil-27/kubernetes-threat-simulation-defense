@@ -1,0 +1,29 @@
+# MISCONFIG 1: Privileged Pod
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: privileged-app
+  namespace: vuln-apps
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: privileged-app
+  template:
+    metadata:
+      labels:
+        app: privileged-app
+    spec:
+      containers:
+        - name: privileged-app
+          image: docker.io/library/nginx:alpine
+          securityContext:
+            privileged: true
+            runAsUser: 0
+          resources:
+            limits:
+              cpu: "200m"
+              memory: "128Mi"
+            requests:
+              cpu: "50m"
+              memory: "64Mi"

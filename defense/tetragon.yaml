@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: tetragon
+  namespace: defense
+spec:
+  selector:
+    matchLabels:
+      app: tetragon
+  template:
+    metadata:
+      labels:
+        app: tetragon
+    spec:
+      hostPID: true
+      hostNetwork: true
+      tolerations:
+        - effect: NoSchedule
+          key: node-role.kubernetes.io/control-plane
+      containers:
+        - name: tetragon
+          image: quay.io/cilium/tetragon:v1.1.0
+          securityContext:
+            privileged: true
+          volumeMounts:
+            - name: proc
+              mountPath: /proc
+            - name: bpf
+              mountPath: /sys/fs/bpf
+            - name: containerd-sock
+              mountPath: /run/containerd/containerd.sock
+          resources:
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+      volumes:
+        - name: proc
+          hostPath:
+            path: /proc
+        - name: bpf
+          hostPath:
+            path: /sys/fs/bpf
+        - name: containerd-sock
+          hostPath:
+            path: /run/containerd/containerd.sock
